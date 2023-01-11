@@ -1,5 +1,7 @@
 # CBM Integration
 
+This repository contains a topology and configuration files needed for running CBM FairMQ devices with ODC/DDS.
+
 ## Steps to run on the Virgo cluster with Slurm
 
 We take `lxbk0600` node here for convenience, but you can take any other or a random `lxlogin` node. You will need to know the node name where `odc-grpc-server` runs to connect to it with `odc-grpc-client`.

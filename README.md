@@ -59,6 +59,12 @@ For an interactive run, the following client commands start a session, launch th
 .down
 ```
 
+To check the state of the devices at any point (when they already exist):
+```
+.state --detailed
+
+```
+
 ### Logs
 
 ODC log is written to `$HOME/.ODC/log/odc_<date>.log`.
@@ -66,3 +72,9 @@ ODC log is written to `$HOME/.ODC/log/odc_<date>.log`.
 The logs for individual devices are stored under `$HOME/.DDS/sessions/<session_id>/wrk/<submission_id>/<job_id_and_node>`.
 
 For anything larger than a handful of devices the location of logs and session files for DDS agents and user tasks should be moved to the local node. This can be configured in `$HOME/.DDS/DDS.cfg` under the key `agent.work_dir`.
+
+## Known Issues
+
+1. Sometimes agent submission gets stuck on worker package creation. Investigated in https://github.com/FairRootGroup/DDS/issues/468.
+
+2. RepReqTsSampler does not return out of Running state on Stop transition. Possibly effect of missing input, but should still be fixed.

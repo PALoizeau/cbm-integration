@@ -34,7 +34,7 @@ export no_grpc_proxy=lxbk0600
 export HOME=/lustre/rz/orybalch/
 ```
 
-### ODC gRPC Server
+### ODC gRPC server
 
 ```bash
 odc-grpc-server --sync --host "*:6667" --rp "slurm:/opt/fairsoft/nov22p1_nodds/bin/odc-rp-epn-slurm --zones online:5:/lustre/rz/orybalch/cbm-integration/slurm-main.cfg:" --timeout 120
@@ -71,7 +71,7 @@ ODC log is written to `$HOME/.ODC/log/odc_<date>.log`.
 
 The logs for individual devices are stored under `$HOME/.DDS/sessions/<session_id>/wrk/<submission_id>/<job_id_and_node>`.
 
-For anything larger than a handful of devices the location of logs and session files for DDS agents and user tasks should be moved to the local node. This can be configured in `$HOME/.DDS/DDS.cfg` under the key `agent.work_dir`.
+For anything larger than a handful of devices the location of logs and session files for DDS agents and user tasks should be moved to the local node (for example to `/tmp/`). This can be configured in `$HOME/.DDS/DDS.cfg` under the key `agent.work_dir`.
 
 ## Known Issues
 

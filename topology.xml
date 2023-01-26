@@ -2,19 +2,24 @@
     <property name="fmqchan_ts-request" />
     <property name="fmqchan_parameters" />
     <property name="fmqchan_histogram-in" />
+    <property name="fmqchan_missedts" />
+    <property name="fmqchan_commands" />
+    <property name="fmqchan_events" />
 
     <decltask name="Sampler">
-        <exe reachable="true">/opt/cbmroot/master_v18.8.0_nov22p1_nodds/bin/RepReqTsSampler --id sampler_%collectionIndex%_%taskIndex% --max-timeslices -1 --fles-host 127.0.0.1:5556 --high-water-mark 10 --no-split-ts 1 --ChNameMissTs missedts --ChNameCmds commands --PubFreqTs 3 --PubTimeMin 1.0 --PubTimeMax 10.0 --HistosSuffix _ --channel-config "name=ts-request,type=rep,method=bind,rateLogging=0" --channel-config "name=histogram-in,type=pub,method=connect,rateLogging=0" --channel-config "name=missedts,type=pub,method=bind,address=tcp://127.0.0.1:11006,rateLogging=0" --channel-config "name=commands,type=pub,method=bind,address=tcp://127.0.0.1:11007,rateLogging=0" --severity debug --color false -P odc</exe>
-        <env>/lustre/rz/orybalch/cbm-integration/env.sh</env>
+        <exe reachable="true">/opt/cbmroot/master_v18.8.0_nov22p1_nodds/bin/RepReqTsSampler --id sampler_%collectionIndex%_%taskIndex% --max-timeslices -1 --fles-host lxbk0832:5557 --high-water-mark 2 --no-split-ts 1 --ChNameMissTs missedts --ChNameCmds commands --PubFreqTs 3 --PubTimeMin 1.0 --PubTimeMax 10.0 --HistosSuffix "_" --channel-config "name=ts-request,type=rep,method=bind,rateLogging=0" --channel-config "name=histogram-in,type=pub,method=connect,rateLogging=0" --channel-config "name=missedts,type=pub,method=bind,rateLogging=0" --channel-config "name=commands,type=pub,method=bind,rateLogging=0" --severity info --color false -P odc</exe>
+        <env>$SDE_HOME/cbm-integration/env.sh</env>
         <properties>
             <name access="write">fmqchan_ts-request</name>
             <name access="read">fmqchan_histogram-in</name>
+            <name access="write">fmqchan_missedts</name>
+            <name access="write">fmqchan_commands</name>
         </properties>
     </decltask>
 
     <decltask name="Unpacker">
-        <exe reachable="true">/opt/cbmroot/master_v18.8.0_nov22p1_nodds/bin/MqUnpack --id unp_%collectionIndex%_%taskIndex% --Setup mcbm_beam_2022_06_16_gold --RunId 2488 --IgnOverMs false --UnpBmon true --UnpMuch false --UnpPsd false --SetTimeOffs kT0,0 --SetTimeOffs kSTS,-970 --SetTimeOffs kTRD,1225 --SetTimeOffs kTRD2D,-525 --SetTimeOffs kTOF,45 --SetTimeOffs kRICH,95 --PubFreqTs 3 --PubTimeMin 1.0 --PubTimeMax 10.0 --TsNameOut unpts_%collectionIndex%_%taskIndex% --channel-config "name=ts-request,type=req,method=connect,rateLogging=0" --channel-config "name=unpts_%collectionIndex%_%taskIndex%,type=push,method=bind,sndBufSize=1,address=tcp://127.0.0.1:11680,rateLogging=0" --channel-config "name=parameters,type=req,method=connect,rateLogging=0" --channel-config "name=histogram-in,type=pub,method=connect,rateLogging=0" --severity debug --color false -P odc</exe>
-        <env>/lustre/rz/orybalch/cbm-integration/env.sh</env>
+        <exe reachable="true">/opt/cbmroot/master_v18.8.0_nov22p1_nodds/bin/MqUnpack --id unp_%collectionIndex%_%taskIndex% --Setup mcbm_beam_2022_06_16_gold --RunId 2488 --IgnOverMs false --UnpBmon true --UnpMuch false --UnpPsd false --SetTimeOffs kT0,0 --SetTimeOffs kSTS,-970 --SetTimeOffs kTRD,1225 --SetTimeOffs kTRD2D,-525 --SetTimeOffs kTOF,45 --SetTimeOffs kRICH,95 --PubFreqTs 3 --PubTimeMin 1.0 --PubTimeMax 10.0 --TsNameOut unpts_%collectionIndex%_%taskIndex% --channel-config "name=ts-request,type=req,method=connect,rateLogging=0" --channel-config "name=unpts_%collectionIndex%_%taskIndex%,type=push,method=bind,sndBufSize=1,address=tcp://127.0.0.1:11680,rateLogging=0" --channel-config "name=parameters,type=req,method=connect,rateLogging=0" --channel-config "name=histogram-in,type=pub,method=connect,rateLogging=0" --severity info --color false -P odc</exe>
+        <env>$SDE_HOME/cbm-integration/env.sh</env>
         <properties>
             <name access="read">fmqchan_ts-request</name>
             <name access="read">fmqchan_parameters</name>
@@ -22,17 +27,38 @@
         </properties>
     </decltask>
 
+    <decltask name="EventBuilder">
+        <exe reachable="true">/opt/cbmroot/master_v18.8.0_nov22p1_nodds/bin/BuildDigiEvents  --id build_%collectionIndex%_%taskIndex%  --IgnTsOver false  --EvtOverMode AllowOverlap --RefDet kTof  --AddDet kT0  --AddDet kMuch  --DelDet kPsd  --SetTrigWin kT0,-100,100 --SetTrigWin kSts,-60,60  --SetTrigWin kMuch,-400,400  --SetTrigWin kTrd,-300,300 --SetTrigWin kTrd2D,-300,300  --SetTrigWin kTof,-30,70  --SetTrigWin kRich,-60,60  --SetTrigMinNb kT0,1  --SetTrigMinNb kSts,2  --SetTrigMinNb kMuch,0  --SetTrigMinNb kTrd,0 --SetTrigMinNb kTrd2D,0  --SetTrigMinNb kTof,8  --SetTrigMinNb kRich,0  --SetTrigMinLayersNb kTof,4  --SetTrigMinLayersNb kSts,0  --PubFreqTs 3 --PubTimeMin 1.0 --PubTimeMax 10.0 --FillHistos true  --TsNameIn unpts_%collectionIndex%_%taskIndex% --channel-config "name=unpts_%collectionIndex%_%taskIndex%,type=pull,method=connect,transport=zeromq,rcvBufSize=2,,address=tcp://127.0.0.1:11680,rateLogging=0" --channel-config "name=events,type=push,method=connect,transport=zeromq,sndBufSize=2,rateLogging=0" --channel-config "name=parameters,type=req,method=connect,rateLogging=0" --channel-config "name=histogram-in,type=pub,method=connect,rateLogging=0" --severity info --color false -P odc</exe>
+        <env>$SDE_HOME/cbm-integration/env.sh</env>
+        <properties>
+            <name access="read">fmqchan_events</name>
+            <name access="read">fmqchan_parameters</name>
+            <name access="read">fmqchan_histogram-in</name>
+        </properties>
+    </decltask>
+
+    <decltask name="DigiEventSink">
+        <exe reachable="true">/opt/cbmroot/master_v18.8.0_nov22p1_nodds/bin/DigiEventSink --id evtsink1 --OutFileName $SDE_HOME/mcbm_integtest_digis_events.root --BypassConsecutiveTs 1 --FillHistos true --PubFreqTs 3 --PubTimeMin 1.0 --PubTimeMax 10.0 --EvtNameIn events --channel-config "name=events,type=pull,method=bind,rcvBufSize=2,rateLogging=0" --channel-config "name=missedts,type=sub,method=connect,rateLogging=0" --channel-config "name=commands,type=sub,method=connect,rateLogging=0" --channel-config "name=histogram-in,type=pub,method=connect,rateLogging=0" --severity info --color false -P odc</exe>
+        <env>$SDE_HOME/cbm-integration/env.sh</env>
+        <properties>
+            <name access="write">fmqchan_events</name>
+            <name access="read">fmqchan_missedts</name>
+            <name access="read">fmqchan_commands</name>
+            <name access="read">fmqchan_histogram-in</name>
+        </properties>
+    </decltask>
+
     <decltask name="ParameterServer">
-        <exe reachable="true">/opt/cbmroot/master_v18.8.0_nov22p1_nodds/bin/MQ/parmq/parmq-server --id parmq-server --channel-name parameters --channel-config "name=parameters,type=rep,method=bind,rateLogging=0" --first-input-name "$VMCWORKDIR/macro/beamtime/mcbm2022/mStsPar.par;$VMCWORKDIR/parameters/trd/trd_v22h_mcbm.asic.par;$VMCWORKDIR/parameters/trd/trd_v22h_mcbm.digi.par;$VMCWORKDIR/parameters/trd/trd_v22h_mcbm.gas.par;$VMCWORKDIR/parameters/trd/trd_v22h_mcbm.gain.par;$VMCWORKDIR/macro/beamtime/mcbm2022/mTofCriParNickel.par;$VMCWORKDIR/macro/beamtime/mcbm2022/mBmonCriPar.par;$VMCWORKDIR/macro/beamtime/mcbm2021/mRichPar_70.par" --first-input-type ASCII --setup mcbm_beam_2022_06_16_gold --severity debug --color false -P odc</exe>
-        <env>/lustre/rz/orybalch/cbm-integration/env.sh</env>
+        <exe reachable="true">/opt/cbmroot/master_v18.8.0_nov22p1_nodds/bin/MQ/parmq/parmq-server --id parmq-server --channel-name parameters --channel-config "name=parameters,type=rep,method=bind,rateLogging=0" --first-input-name "$VMCWORKDIR/macro/beamtime/mcbm2022/mStsPar.par;$VMCWORKDIR/parameters/trd/trd_v22h_mcbm.asic.par;$VMCWORKDIR/parameters/trd/trd_v22h_mcbm.digi.par;$VMCWORKDIR/parameters/trd/trd_v22h_mcbm.gas.par;$VMCWORKDIR/parameters/trd/trd_v22h_mcbm.gain.par;$VMCWORKDIR/macro/beamtime/mcbm2022/mTofCriParNickel.par;$VMCWORKDIR/macro/beamtime/mcbm2022/mBmonCriPar.par;$VMCWORKDIR/macro/beamtime/mcbm2021/mRichPar_70.par" --first-input-type ASCII --setup mcbm_beam_2022_06_16_gold --severity info --color false -P odc</exe>
+        <env>$SDE_HOME/cbm-integration/env.sh</env>
         <properties>
             <name access="write">fmqchan_parameters</name>
         </properties>
     </decltask>
 
     <decltask name="HistogramServer">
-        <exe reachable="true">/opt/cbmroot/master_v18.8.0_nov22p1_nodds/bin/MqHistoServer --id server1 --histport 8080 --channel-config "name=histogram-in,type=sub,method=bind,rateLogging=0" --channel-config "name=histo-conf,type=sub,method=bind,address=tcp://127.0.0.1:11667,rateLogging=0" --channel-config "name=canvas-conf,type=sub,method=bind,address=tcp://127.0.0.1:11668,rateLogging=0" --severity debug --color false -P odc</exe>
-        <env>/lustre/rz/orybalch/cbm-integration/env.sh</env>
+        <exe reachable="true">/opt/cbmroot/master_v18.8.0_nov22p1_nodds/bin/MqHistoServer --id server1 --histport 8080 --HistoFileName $SDE_HOME/mcbm_integtest_histos.root --channel-config "name=histogram-in,type=sub,method=bind,rateLogging=0" --channel-config "name=histo-conf,type=sub,method=bind,address=tcp://127.0.0.1:11667,rateLogging=0" --channel-config "name=canvas-conf,type=sub,method=bind,address=tcp://127.0.0.1:11668,rateLogging=0" --severity info --color false -P odc</exe>
+        <env>$SDE_HOME/cbm-integration/env.sh</env>
         <properties>
             <name access="write">fmqchan_histogram-in</name>
         </properties>
@@ -42,6 +68,8 @@
         <tasks>
             <name>Sampler</name>
             <name n="2">Unpacker</name>
+            <name n="2">EventBuilder</name>
+            <name>DigiEventSink</name>
             <name>ParameterServer</name>
             <name>HistogramServer</name>
         </tasks>

@@ -34,6 +34,10 @@ export no_grpc_proxy=lxbk0600
 export HOME=/lustre/rz/orybalch/
 ```
 
+5. Set SDE_HOME to the folder where the clone of this repo was placed
+
+6. Change SDE_HOME value also in `env.sh`
+
 ### ODC gRPC server
 
 ```bash
@@ -73,6 +77,7 @@ To check the state of the devices at any point (when they already exist):
 export SDE_HOME=/lustre/cbm/users/ploizeau/sde2023
 cd $SDE_HOME
 ```
+1. Change SDE_HOME value in `env.sh`
 1. Start the ODC gRPC server with 8 possible device slots (!Remember to check with `ps aux | grep 6668` if the port is already used on this lxbk node and increase it if needed)
 ```bash
 odc-grpc-server --sync --host "*:6668" --rp "slurm:/opt/fairsoft/nov22p1_nodds/bin/odc-rp-epn-slurm --zones online:8:$SDE_HOME/cbm-integration/slurm-main.cfg:" --timeout 120
@@ -108,6 +113,15 @@ spm-run /home/loizeau/scripts/replayers_node_2022_Ni_Au.spm
 .reset
 .term
 .down
+```
+
+## Steps to run the "full" test case with data replayed on Virgo at close to real bandwidth
+
+Same as for mFLES replay, except that the spm-run command is replaced with a command executed on virgo:
+```
+ssh -Y virgo-debian10.hpc.gsi.de
+cd <cbm-integration-folder>
+sbatch flesnet_replay_2022_ni.sbatch 2391 5557
 ```
 
 ### Logs

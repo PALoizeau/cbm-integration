@@ -6,7 +6,7 @@ This repository contains a topology and configuration files needed for running C
 
 We take `lxbk0600` node here for convenience, but you can take any other or a random `lxlogin` node. You will need to know the node name where `odc-grpc-server` runs to connect to it with `odc-grpc-client`.
 
-We use the container `/cvmfs/cbm.gsi.de/debian10/containers/debian10_master_v18.8.0_nov22p1_nodds.sif`, where CBM, ODC and DDS are installed under /opt/.
+We use the container `/cvmfs/cbm.gsi.de/debian10/containers/debian10_master_v18.8.0_nov22p1_online_flesnet.sif`, where CBM, ODC and DDS are installed under /opt/.
 
 Adjust the host names and paths for your environment
 
@@ -15,13 +15,13 @@ Adjust the host names and paths for your environment
 1. Launch the CBM+ODC+DDS container on Virgo (both for ODC server and client)
 
 ```sh
-SINGULARITY_CONTAINER=/cvmfs/cbm.gsi.de/debian10/containers/debian10_master_v18.8.0_nov22p1_nodds.sif ssh -o SendEnv=SINGULARITY_CONTAINER lxbk0600
+SINGULARITY_CONTAINER=/cvmfs/cbm.gsi.de/debian10/containers/debian10_master_v18.8.0_nov22p1_online_flesnet.sif ssh -o SendEnv=SINGULARITY_CONTAINER lxbk0600
 ```
 
 2. initialize CBM, ODC, DDS environment
 
 ```bash
-source /opt/cbmroot/master_v18.8.0_nov22p1_nodds/bin/CbmRootConfig.sh -a
+source /opt/cbmroot/master_v18.8.0_nov22p1_online_flesnet/bin/CbmRootConfig.sh -a
 ```
 
 3. Disable http_proxy for gRPC
@@ -80,7 +80,7 @@ cd $SDE_HOME
 1. Change SDE_HOME value in `env.sh`
 1. Start the ODC gRPC server with 8 possible device slots (!Remember to check with `ps aux | grep 6668` if the port is already used on this lxbk node and increase it if needed)
 ```bash
-odc-grpc-server --sync --host "*:6668" --rp "slurm:/opt/fairsoft/nov22p1_nodds/bin/odc-rp-epn-slurm --zones online:8:$SDE_HOME/cbm-integration/slurm-main.cfg:" --timeout 120
+odc-grpc-server --sync --host "*:6668" --rp "slurm:/opt/fairsoft/nov22p1_online/bin/odc-rp-epn-slurm --zones online:8:$SDE_HOME/cbm-integration/slurm-main.cfg:" --timeout 120
 ```
 1. Start the ODC client
 ```bash
@@ -117,12 +117,14 @@ spm-run /home/loizeau/scripts/replayers_node_2022_Ni_Au.spm
 
 ## Steps to run the "full" test case with data replayed on Virgo at close to real bandwidth
 
-Same as for mFLES replay, except that the spm-run command is replaced with a command executed on virgo:
+Same as for mFLES replay, except that
+1. the spm-run command is replaced with a command executed on virgo:
 ```
 ssh -Y virgo-debian10.hpc.gsi.de
 cd <cbm-integration-folder>
 sbatch flesnet_replay_2022_ni.sbatch 2391 5557
 ```
+1. This command should be used to start the virgo job before running the topology, so that the timeslice source node can be changed in the xml file (check the node with `squeue -u $USER`)
 
 ### Logs
 
@@ -144,3 +146,6 @@ For anything larger than a handful of devices the location of logs and session f
 3. Environment variable expansion does not work when pointing to the topology in the ODC `.run` command, even when it is defined in both client and server sides
 
 4. The stop sequence is not controlled, sometimes leading to errors because clients try to contact servers which are already in the `READY` state.
+
+5. DigiEventSink crashes on termination. Cause is not clear as the output file is properly closed just before, it seems there is on push/publish too much after the sockets are closed, \
+   => To be investigated on the Cbmroot side
